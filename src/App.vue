@@ -12,28 +12,23 @@
             <tr>
               <th colspan="2">Marca</th>
             </tr>
-            <tr>
-              <td>Chevrolet</td>
+            <tr v-for="marca in marcas" :key="marca.codigo">
+              <td>{{ marca.nome }}</td>
               <td>
-                <a>Ver Modelos</a>
-              </td>
-            </tr>
-            <tr>
-              <td>Fiat</td>
-              <td>
-                <a>Ver Modelos</a>
-              </td>
-            </tr>
-            <tr>
-              <td>Ford</td>
-              <td>
-                <a>Ver Modelos</a>
+                <a
+                  href="#modelos"
+                  v-on:click="selecionarMarca(marca)"
+                  v-bind:class="{
+                    active: marca.codigo == marcaSelecionada.codigo,
+                  }"
+                  >Ver Modelos</a
+                >
               </td>
             </tr>
           </table>
         </div>
       </div>
-      <div class="card">
+      <div class="card" id="modelos">
         <div class="header">
           <h2>Modelos</h2>
         </div>
@@ -42,11 +37,8 @@
             <tr>
               <th>Modelo</th>
             </tr>
-            <tr>
-              <td>Onix</td>
-            </tr>
-            <tr>
-              <td>Prisma</td>
+            <tr v-for="modelo in modelos" :key="modelo.codigo">
+              <td>{{ modelo.nome }}</td>
             </tr>
           </table>
         </div>
@@ -57,16 +49,25 @@
 </template>
 
 <script>
+import * as axios from "axios";
 export default {
   name: "App",
   data() {
-    return { todos: [], todo: { checked: false } };
+    return { marcas: [], marcaSelecionada: {}, modelos: [] };
+  },
+  async beforeMount() {
+    const response = await axios.get(
+      "https://parallelum.com.br/fipe/api/v1/carros/marcas"
+    );
+    this.marcas = response.data;
   },
   methods: {
-    addTodo(todo) {
-      todo.id = Date.now();
-      this.todos.push(todo);
-      this.todo = { checked: false };
+    async selecionarMarca(marca) {
+      this.marcaSelecionada = marca;
+      const response = await axios.get(
+        `https://parallelum.com.br/fipe/api/v1/carros/marcas/${marca.codigo}/modelos`
+      );
+      this.modelos = response.data.modelos;
     },
   },
 };
@@ -143,9 +144,12 @@ th {
 
 a {
   color: #4e73df;
+  cursor: pointer;
+  text-decoration: none;
 }
 
-a:active {
+a:active,
+a.active {
   color: #1cc88a;
 }
 </style>
